@@ -28,21 +28,21 @@ parser.add_argument('-consensus', default=1, help="sets FRL using consensus", ty
 parser.add_argument('-PS', default=0, help="sets FRL with target model server", type=int)
 parser.add_argument('-isolated', default=0, help="disable FRL ", type=int)
 parser.add_argument('-centralized', default=0, help="centralized RL", type=int)
-parser.add_argument('-update_federation', default=15, help="centralized RL", type=int)
+parser.add_argument('-update_federation', default=20, help="counts the number of frames (robot movements) per epoch", type=int)
 parser.add_argument('-run', default=0, help="run number", type=int)
-parser.add_argument('-target_reward', default=40, help="run number", type=int)
+parser.add_argument('-target_reward', default=50, help="run number", type=int)
 parser.add_argument('-mu', default=0.00025, help="sets the learning rate for DQL", type=float)
-parser.add_argument('-eps', default=1, help="sets the mixing parameters for model averaging (CFA)", type=float)
+parser.add_argument('-eps', default=1, help="sets the mixing parameters for model averaging (CFL)", type=float)
 parser.add_argument('-K', default=5, help="sets the number of network devices", type=int)
 parser.add_argument('-N', default=1, help="sets the max. number of neighbors per device per round", type=int)
 parser.add_argument('-pos', default=100, help="sets the maximum total number of explorable positions: pos/K gives the number of explored positions per device", type=int)
-parser.add_argument('-true_pos', default=30, help="sets the number of true positions in the workspace", type=int)
-parser.add_argument('-input_data', default='dataset_trajectories/data_robots.mat', help="sets the path to the federated dataset, to compute new observations and rewards for input actions ", type=str)
-parser.add_argument('-input_table', default='dataset_trajectories/lookuptab.mat', help="sets the path to the lookup table to compute robot trajectories", type=str)
-parser.add_argument('-input_rewards', default='dataset_trajectories/rewards.mat', help="sets the path to the input rewards per robot position", type=str)
+parser.add_argument('-true_pos', default=35, help="sets the number of explorable positions in the workspace", type=int)
+parser.add_argument('-input_data', default='dataset_trajectories/data_robots2.mat', help="sets the path to the federated dataset, to compute new observations and rewards for input actions ", type=str)
+parser.add_argument('-input_table', default='dataset_trajectories/lookuptab2.mat', help="sets the path to the lookup table to compute robot trajectories", type=str)
+parser.add_argument('-input_rewards', default='dataset_trajectories/rewards2.mat', help="sets the path to the input rewards per robot position", type=str)
 parser.add_argument('-rand', default=1, help="sets static or random choice of the N neighbors on every new round (0 static, 1 random)", type=int)
-parser.add_argument('-consensus_mode', default=0, help="0: combine one neighbor at a time and run sgd AFTER every new combination; 1 (faster): combine all neighbors on a single stage, run one sgd after this combination", type=int)
-parser.add_argument('-graph', default=6, help="sets the input graph: 0 for default graph, >0 uses the input graph in vGraph.mat, and choose one graph from the available adjacency matrices", type=int)
+#parser.add_argument('-consensus_mode', default=0, help="0: combine one neighbor at a time and run sgd AFTER every new combination; 1 (faster): combine all neighbors on a single stage, run one sgd after this combination", type=int)
+#parser.add_argument('-graph', default=6, help="sets the input graph: 0 for default graph, >0 uses the input graph in vGraph.mat, and choose one graph from the available adjacency matrices", type=int)
 args = parser.parse_args()
 
 devices = args.K  # NUMBER OF DEVICES
@@ -73,10 +73,10 @@ update_target_network = 2000 # other option 500
 update_target_server = 500
 target_reward = args.target_reward
 # How often to update the consensus process
-update_consensus = args.update_federation # PREVIOUSLY 8 (update consensus or plain FL with PS
+update_consensus = args.update_federation
 #update_consensus = 100 # PREVIOUSLY 8 (upate consensus or plain FL with PS
 # max number of episodes
-max_episodes = 5000
+max_episodes = 10000
 # Maximum replay length
 max_memory_length = 50000 # previous 100000
 # Using huber loss for stability
@@ -95,7 +95,7 @@ def create_q_model():
     # Network defined by the Deepmind paper
     inputs = layers.Input(shape=(80, 88, 1,))
 
-    # Convolutions on the frames on the screen
+    # Convolutions on the camera frames
     layer1 = layers.Conv2D(32, 8, strides=4, activation="relu")(inputs)
     layer2 = layers.Conv2D(64, 4, strides=2, activation="relu")(layer1)
     layer3 = layers.Conv2D(64, 3, strides=1, activation="relu")(layer2)
@@ -109,11 +109,9 @@ def create_q_model():
 
 # frame_count_global = np.zeros(devices, dtype=int)
 
-# The first model makes the predictions for Q-values which are used to
-# make a action.
-# Build a target model for the prediction of future rewards.
-# The weights of a target model get updated every 10000 steps thus when the
-# loss between the Q-values is calculated the target Q-value is stable.
+# The model makes the predictions for Q-values which are used to make a action.
+# Target model is used for the prediction of future rewards.
+# Consensus and FL are applied on the model parameters
 
 def processTargetServer(devices, federated):
     model_target_global = create_q_model()
@@ -422,33 +420,7 @@ def processData(device_index, number_positions_devices, federated, target_server
                 # np.savez_compressed(outfile, frame_count=frame_count, episode_reward_history=episode_reward_history,
                 # running_reward=running_reward, episode_count=episode_count, epsilon=epsilon, training_end=training_end)
                 stop_aggregation = False
-                # if target_server:
-                #     # template = "PS: running reward: {:.2f} for device {} at episode {}, frame count {}"
-                #     # print(template.format(running_reward, device_index, episode_count, frame_count))
-                #     while not os.path.isfile(global_target_model):
-                #         # implementing consensus
-                #         print("waiting")
-                #         pause(1)
-                #     try:
-                #         model_target_global = np.load(global_target_model, allow_pickle=True)
-                #     except:
-                #         pause(5)
-                #         print("retrying opening target model")
-                #         try:
-                #             model_target_global = np.load(global_target_model, allow_pickle=True)
-                #         except:
-                #             print("halting aggregation")
-                #             stop_aggregation = True
-                #
-                #     if stop_aggregation:
-                #         model_target.set_weights(model.get_weights())
-                #     else:
-                #         print("updating from global target model")
-                #         model_target.set_weights(model_target_global.tolist())
-                # else:
-                #     model_target.set_weights(model.get_weights())
 
-                # double learning: copy current model in model target
                 model_target.set_weights(model.get_weights())
 
                 # model_loaded = models.load_model('model.h5')
@@ -498,7 +470,7 @@ def processData(device_index, number_positions_devices, federated, target_server
             episode_reward += reward
             state = state_next
             if done:
-                # print("initializing")
+                print("found an exit with reward {}".format(reward))
                 break
         trajectory[tr_count] = robot_trajectory_validation.getPosition()
 
@@ -506,8 +478,8 @@ def processData(device_index, number_positions_devices, federated, target_server
         episode_reward_history.append(episode_reward)
         if len(episode_reward_history) > max_episodes:  # check memory
             del episode_reward_history[:1]
-        # mean reward for last 50 episodes
-        running_reward = np.mean(episode_reward_history[-20:])
+        # mean reward for last 10 episodes (change depending on application)
+        running_reward = np.mean(episode_reward_history[-10:])
 
         episode_count += 1
 

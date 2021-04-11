@@ -25,14 +25,14 @@ warnings.filterwarnings("ignore")
 parser = argparse.ArgumentParser()
 parser.add_argument('-resume', default=0, help="set 1 to resume from a previous simulation, 0 to start from the beginning", type=float)
 parser.add_argument('-PS', default=0, help="set 1 to enable PS server and FedAvg, set 0 to disable PS", type=float)
-parser.add_argument('-consensus', default=1, help="set 1 to enable consensus, set 0 to disable", type=float)
-parser.add_argument('-mu', default=0.00025, help="sets the learning rate for all setups", type=float)
+parser.add_argument('-consensus', default=0, help="set 1 to enable consensus, set 0 to disable", type=float)
+parser.add_argument('-mu', default=0.001, help="sets the learning rate for all setups", type=float)
 parser.add_argument('-eps', default=1, help="sets the mixing parameters for model averaging (CFA)", type=float)
-parser.add_argument('-target', default=0.1, help="sets the target loss to stop federation", type=float)
-parser.add_argument('-K', default=30, help="sets the number of network devices", type=int)
+parser.add_argument('-target', default=0.05, help="sets the target loss to stop federation", type=float)
+parser.add_argument('-K', default=100, help="sets the number of network devices", type=int)
 parser.add_argument('-Ka', default=20, help="sets the number of active devices per round in FA (<= K)", type=int)
 parser.add_argument('-N', default=1, help="sets the max. number of neighbors per device per round in CFA", type=int)
-parser.add_argument('-Ka_consensus', default=20, help="sets the number of active devices for consensus", type=int)
+parser.add_argument('-Ka_consensus', default=30, help="sets the number of active devices for consensus", type=int)
 parser.add_argument('-samp', default=500, help="sets the number samples per device", type=int)
 parser.add_argument('-noniid_assignment', default=0, help=" set 0 for iid assignment, 1 for non-iid random", type=int)
 parser.add_argument('-run', default=0, help=" set the run id", type=int)
@@ -40,11 +40,13 @@ parser.add_argument('-random_data_distribution', default=0, help=" set 0 for fix
 parser.add_argument('-batches', default=5, help="sets the number of batches per learning round", type=int)
 parser.add_argument('-batch_size', default=100, help="sets the batch size per learning round", type=int)
 parser.add_argument('-graph', default=6, help="sets the input graph: 0 for default graph, >0 uses the input graph in vGraph.mat, and choose one graph from the available adjacency matrices", type=int)
+parser.add_argument('-modelselection', default=0, help="sets the model: 0 for lenet-1", type=int)
 args = parser.parse_args()
 
 devices = args.K  # NUMBER OF DEVICES
 active_devices_per_round = args.Ka
 max_epochs = 200
+condition = args.modelselection
 
 
 if args.consensus == 1:
@@ -56,6 +58,8 @@ elif args.PS == 1:
 else: # CL: CENTRALIZED LEARNING ON DEVICE 0 (DATA CENTER)
     federated = False
     parameter_server = False
+
+
 
 ################# consensus, create the scheduling function ################
 scheduling_tx = np.zeros((devices, max_epochs*2), dtype=int)
@@ -150,11 +154,27 @@ def create_q_model():
     # Network defined by the Deepmind paper
     inputs = layers.Input(shape=(28, 28, 1,))
 
-    layer1 = layers.Conv2D(32, kernel_size=(3, 3), activation="relu")(inputs)
-    layer2 = layers.MaxPooling2D(pool_size=(2, 2))(layer1)
-    layer3 = layers.Conv2D(64, kernel_size=(3, 3), activation="relu")(layer2)
-    layer4 = layers.MaxPooling2D(pool_size=(2, 2))(layer3)
-    layer5 = layers.Flatten()(layer4)
+    if condition == 0:
+        # lenet - 1
+     layer1 = layers.Conv2D(4, kernel_size=(5, 5), activation="relu")(inputs)
+     layer2 = layers.AveragePooling2D(pool_size=(2, 2))(layer1)
+     layer3 = layers.Conv2D(8, kernel_size=(5, 5), activation="relu")(layer2)
+     layer4 = layers.AveragePooling2D(pool_size=(2, 2))(layer3)
+     layer5 = layers.Flatten()(layer4)
+
+    elif condition == 1:
+        layer1 = layers.Conv2D(32, kernel_size=(3, 3), activation="relu")(inputs)
+        layer2 = layers.MaxPooling2D(pool_size=(2, 2))(layer1)
+        layer3 = layers.Conv2D(64, kernel_size=(3, 3), activation="relu")(layer2)
+        layer4 = layers.MaxPooling2D(pool_size=(2, 2))(layer3)
+        layer5 = layers.Flatten()(layer4)
+
+    else:
+        layer1 = layers.Conv2D(14, kernel_size=(3, 3), activation="relu")(inputs)
+        layer2 = layers.MaxPooling2D(pool_size=(2, 2))(layer1)
+        layer3 = layers.Conv2D(64, kernel_size=(3, 3), activation="relu")(layer2)
+        layer4 = layers.MaxPooling2D(pool_size=(2, 2))(layer3)
+        layer5 = layers.Flatten()(layer4)
 
     # Convolutions
     # layer1 = layers.Conv2D(32, 8, strides=4, activation="relu")(inputs)
