@@ -527,10 +527,10 @@ def processData(device_index, start_samples, samples, federated, full_data_size,
                         device_index, samples, devices, args.N, number_of_batches, batch_size), dict_1)
             elif parameter_server:
                 sio.savemat(
-                    "results/matlab/FA_device_{}_samples_{}_devices_{}_active_{}_batches_{}_size{}_noniid{}_run{}_distribution{}.mat".format(
+                    "results/matlab/FA1_device_{}_samples_{}_devices_{}_active_{}_batches_{}_size{}_noniid{}_run{}_distribution{}.mat".format(
                         device_index, samples, devices, active_devices_per_round, number_of_batches, batch_size, args.noniid_assignment,args.run, args.random_data_distribution), dict_1)
                 sio.savemat(
-                    "FA_device_{}_samples_{}_devices_{}_active_{}_batches_{}_size{}.mat".format(
+                    "FA1_device_{}_samples_{}_devices_{}_active_{}_batches_{}_size{}.mat".format(
                         device_index, samples, devices, active_devices_per_round, number_of_batches, batch_size), dict_1)
             else: # CL
                 sio.savemat(
@@ -576,11 +576,11 @@ def processData(device_index, start_samples, samples, federated, full_data_size,
                         device_index, samples, devices, args.N, number_of_batches, batch_size), dict_1)
             elif parameter_server:
                 sio.savemat(
-                    "results/matlab/FA_device_{}_samples_{}_devices_{}_active_{}_batches_{}_size{}_noniid{}_run{}_distribution{}.mat".format(
+                    "results/matlab/FA1_device_{}_samples_{}_devices_{}_active_{}_batches_{}_size{}_noniid{}_run{}_distribution{}.mat".format(
                         device_index, samples, devices, active_devices_per_round, number_of_batches, batch_size,
                         args.noniid_assignment, args.run, args.random_data_distribution), dict_1)
                 sio.savemat(
-                    "FA_device_{}_samples_{}_devices_{}_active_{}_batches_{}_size{}.mat".format(
+                    "FA1_device_{}_samples_{}_devices_{}_active_{}_batches_{}_size{}.mat".format(
                         device_index, samples, devices, active_devices_per_round, number_of_batches, batch_size),
                     dict_1)
             else:  # CL

@@ -3,9 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="df19662b-489d-4b8c-9749-bd5d21758375" name="Default Changelist" comment="updated PS">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/federated_learning_keras_consensus_FL_MNIST.py" beforeDir="false" afterPath="$PROJECT_DIR$/federated_learning_keras_consensus_FL_MNIST.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ReinforcementLearning/Federated_Deep_QLearning.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ReinforcementLearning/Federated_Deep_QLearning.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ReinforcementLearning/RobotTrajectory.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ReinforcementLearning/RobotTrajectory.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/federated_learning_keras_low_power_PS_MNIST.py" beforeDir="false" afterPath="$PROJECT_DIR$/federated_learning_keras_low_power_PS_MNIST.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
