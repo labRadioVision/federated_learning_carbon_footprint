@@ -21,3 +21,48 @@ Reward: gives the pre-programmed rewards for each position in the grid. Rewards 
 Reinforcement Learning algorithm: Deep Q-Learning
 
 Federated Learning method: PS (FL with Parameter Server, or vanilla Fl) and consensus-driven FL. For further details see https://arxiv.org/abs/2103.10346
+
+Code usage:
+usage: Federated_Deep_QLearning.py [-h] [-resume RESUME]
+                                   [-consensus CONSENSUS] [-PS PS]
+                                   [-isolated ISOLATED]
+                                   [-centralized CENTRALIZED]
+                                   [-update_federation UPDATE_FEDERATION]
+                                   [-run RUN] [-target_reward TARGET_REWARD]
+                                   [-mu MU] [-eps EPS] [-K K] [-N N]
+                                   [-pos POS] [-true_pos TRUE_POS]
+                                   [-input_data INPUT_DATA]
+                                   [-input_table INPUT_TABLE]
+                                   [-input_rewards INPUT_REWARDS] [-rand RAND]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -consensus CONSENSUS  sets FRL using consensus, implements Consensus-driven FL on DeepMind ML model
+  -PS PS                sets FRL with PS, implements vanilla FL on DeepMind ML model
+  -isolated ISOLATED    disable FRL, all robots learn independently, without cooperation
+  -centralized CENTRALIZED
+                        centralized RL, robots send observations to a datacenter, the datacenter runs the RL algorithm
+  -update_federation UPDATE_FEDERATION
+                        counts the number of frames (robot movements) per
+                        epoch
+  -run RUN              run number (for multiple episodes)
+  -target_reward TARGET_REWARD: sets the target reward to stop exploration
+  -mu MU                sets the learning rate for DQL
+  -eps EPS              sets the mixing parameters for model averaging (C-FL)
+  -K K                  sets the number of network devices (K=5 is supported)
+  -N N                  sets the max. number of neighbors per device per round (N=1 is supported)
+  -pos POS              sets the maximum total number of explorable positions:
+                        pos/K gives the number of explored positions per
+                        device/agent/robot
+  -true_pos TRUE_POS    sets the number of explorable positions in the
+                        workspace (without obstacles)
+  -input_data INPUT_DATA
+                        sets the path to the federated dataset, to compute new
+                        observations and rewards for input actions
+  -input_table INPUT_TABLE
+                        sets the path to the lookup table to compute robot
+                        trajectories
+  -input_rewards INPUT_REWARDS
+                        sets the path to the input rewards per robot position
+  -rand RAND            sets static or random choice of the N neighbors on
+                        every new round (0 static, 1 random)
