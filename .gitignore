@@ -7,3 +7,6 @@ MNIST_dataset/consensus/__pycache__/parameter_server.cpython-38.pyc
 MNIST_dataset/consensus/__pycache__/consensus_v3.cpython-38.pyc
 MNIST_dataset/consensus/__pycache__/consensus_v2.cpython-38.pyc
 *.pyc
+*.docx
+*.tmp
+ReinforcementLearning/.idea/.name
